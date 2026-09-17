@@ -16,7 +16,7 @@
 #   public *;
 #}
 
--keep class rkr.simplekeyboard.inputmethod.R
--keep class rkr.simplekeyboard.inputmethod.latin.settings.SettingsFragment
--keep class rkr.simplekeyboard.inputmethod.latin.settings.LanguagesSettingsFragment
--keep class rkr.simplekeyboard.inputmethod.latin.settings.SingleLanguageSettingsFragment
+-keep class com.profazia.cleanboard.R
+-keep class com.profazia.cleanboard.latin.settings.SettingsFragment
+-keep class com.profazia.cleanboard.latin.settings.LanguagesSettingsFragment
+-keep class com.profazia.cleanboard.latin.settings.SingleLanguageSettingsFragment

@@ -2,7 +2,7 @@ apply plugin: 'com.android.application'
 
 android {
     defaultConfig {
-        applicationId "rkr.simplekeyboard.inputmethod"
+        applicationId "com.profazia.cleanboard"
         compileSdk 37
         minSdkVersion 24
         targetSdkVersion 37
@@ -15,7 +15,7 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
-    namespace 'rkr.simplekeyboard.inputmethod'
+    namespace 'com.profazia.cleanboard'
 
     dependenciesInfo {
         includeInApk = false
