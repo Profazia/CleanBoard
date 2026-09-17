@@ -40,6 +40,7 @@ import com.profazia.cleanboard.keyboard.KeyboardTheme;
 import com.profazia.cleanboard.latin.AudioAndHapticFeedbackManager;
 import com.profazia.cleanboard.latin.InputAttributes;
 import com.profazia.cleanboard.latin.RichInputMethodManager;
+import com.profazia.cleanboard.latin.common.HomoglyphMapper;
 
 public final class Settings extends BroadcastReceiver implements SharedPreferences.OnSharedPreferenceChangeListener {
     private static final String TAG = Settings.class.getSimpleName();
@@ -64,6 +65,8 @@ public final class Settings extends BroadcastReceiver implements SharedPreferenc
     public static final String PREF_SHOW_NUMBER_ROW = "pref_show_number_row";
     public static final String PREF_SPACE_SWIPE = "pref_space_swipe";
     public static final String PREF_DELETE_SWIPE = "pref_delete_swipe";
+    public static final String PREF_HOMOGLYPH_ENABLED = "pref_homoglyph_enabled";
+    public static final String PREF_HOMOGLYPH_STYLE = "pref_homoglyph_style";
 
     private static final float UNDEFINED_PREFERENCE_VALUE_FLOAT = -1.0f;
     private static final int UNDEFINED_PREFERENCE_VALUE_INT = -1;
@@ -153,6 +156,7 @@ public final class Settings extends BroadcastReceiver implements SharedPreferenc
                     case PREF_ENABLE_IME_SWITCH:
                     case PREF_DELETE_SWIPE:
                     case PREF_SPACE_SWIPE:
+                    case PREF_HOMOGLYPH_ENABLED:
                     case PREF_VIBRATE_ON:
                     case PREF_SOUND_ON:
                     case PREF_POPUP_ON:
@@ -249,6 +253,23 @@ public final class Settings extends BroadcastReceiver implements SharedPreferenc
 
     public static boolean readDeleteSwipeEnabled(final SharedPreferences prefs) {
         return prefs.getBoolean(PREF_DELETE_SWIPE, false);
+    }
+
+    public static boolean readHomoglyphEnabled(final SharedPreferences prefs) {
+        return prefs.getBoolean(PREF_HOMOGLYPH_ENABLED, false);
+    }
+
+    /**
+     * Reads the script that characters are replaced with, or
+     * {@link HomoglyphMapper#STYLE_OFF} when the substitution is switched off entirely. This
+     * folds the on/off switch into the returned style so that callers only need to consult one
+     * value.
+     */
+    public static String readHomoglyphStyle(final SharedPreferences prefs) {
+        if (!readHomoglyphEnabled(prefs)) {
+            return HomoglyphMapper.STYLE_OFF;
+        }
+        return prefs.getString(PREF_HOMOGLYPH_STYLE, HomoglyphMapper.STYLE_DEFAULT);
     }
 
     public static String readPrefSubtypes(final SharedPreferences prefs) {

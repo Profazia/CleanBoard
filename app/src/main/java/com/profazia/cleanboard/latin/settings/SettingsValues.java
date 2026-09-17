@@ -49,6 +49,9 @@ public class SettingsValues {
     public final boolean mShowNumberRow;
     public final boolean mSpaceSwipeEnabled;
     public final boolean mDeleteSwipeEnabled;
+    // The script that typed characters are replaced with, or HomoglyphMapper.STYLE_OFF when
+    // characters are committed unchanged.
+    public final String mHomoglyphStyle;
 
     // From the input box
     public final InputAttributes mInputAttributes;
@@ -91,6 +94,7 @@ public class SettingsValues {
         mShowNumberRow = Settings.readShowNumberRow(prefs);
         mSpaceSwipeEnabled = Settings.readSpaceSwipeEnabled(prefs);
         mDeleteSwipeEnabled = Settings.readDeleteSwipeEnabled(prefs);
+        mHomoglyphStyle = Settings.readHomoglyphStyle(prefs);
     }
 
     public boolean isWordSeparator(final int code) {

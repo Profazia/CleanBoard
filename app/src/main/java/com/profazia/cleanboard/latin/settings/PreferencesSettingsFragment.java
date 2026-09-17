@@ -37,6 +37,8 @@ import com.profazia.cleanboard.keyboard.KeyboardLayoutSet;
  * - Switch to other keyboards
  * - Space swipe cursor move
  * - Delete swipe
+ * - Look-alike characters
+ * - Look-alike script
  */
 public final class PreferencesSettingsFragment extends SubScreenFragment {
     @Override

@@ -63,4 +63,16 @@
         <item>PC</item>
         <item>ABC</item>
     </string-array>
+    <!-- Scripts that typed letters and digits can be replaced with. These values are matched
+         against the style constants in HomoglyphMapper, so they must not be translated. The
+         display names live in the homoglyph_style_labels array in strings.xml, in this order. -->
+    <string-array name="homoglyph_style_values">
+        <item>greek</item>
+        <item>cyrillic</item>
+        <item>cherokee</item>
+        <item>fullwidth</item>
+        <item>math_sans</item>
+        <item>math_mono</item>
+        <item>mixed</item>
+    </string-array>
 </resources>

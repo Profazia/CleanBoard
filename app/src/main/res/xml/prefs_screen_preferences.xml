@@ -52,4 +52,17 @@
         android:key="pref_delete_swipe"
         android:title="@string/delete_swipe"
         android:defaultValue="false" />
+    <SwitchPreference
+        android:key="pref_homoglyph_enabled"
+        android:title="@string/homoglyph_enabled"
+        android:summary="@string/homoglyph_enabled_summary"
+        android:defaultValue="false" />
+    <ListPreference
+        android:key="pref_homoglyph_style"
+        android:title="@string/homoglyph_style"
+        android:summary="%s"
+        android:entries="@array/homoglyph_style_labels"
+        android:entryValues="@array/homoglyph_style_values"
+        android:dependency="pref_homoglyph_enabled"
+        android:defaultValue="greek" />
 </PreferenceScreen>

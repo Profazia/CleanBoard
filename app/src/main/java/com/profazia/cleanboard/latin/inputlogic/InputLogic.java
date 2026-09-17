@@ -32,6 +32,7 @@ import com.profazia.cleanboard.event.InputTransaction;
 import com.profazia.cleanboard.latin.LatinIME;
 import com.profazia.cleanboard.latin.RichInputConnection;
 import com.profazia.cleanboard.latin.common.Constants;
+import com.profazia.cleanboard.latin.common.HomoglyphMapper;
 import com.profazia.cleanboard.latin.common.StringUtils;
 import com.profazia.cleanboard.latin.settings.SettingsValues;
 import com.profazia.cleanboard.latin.utils.InputTypeUtils;
@@ -92,7 +93,8 @@ public final class InputLogic {
     public InputTransaction onTextInput(final SettingsValues settingsValues, final Event event) {
         final String rawText = event.getTextToCommit().toString();
         final InputTransaction inputTransaction = new InputTransaction(settingsValues);
-        final String text = performSpecificTldProcessingOnTextInput(rawText);
+        final String text = HomoglyphMapper.map(
+                performSpecificTldProcessingOnTextInput(rawText), settingsValues.mHomoglyphStyle);
         mConnection.commitText(text, 1);
         // Space state must be updated before calling updateShiftState
         inputTransaction.requireShiftUpdate(InputTransaction.SHIFT_UPDATE_NOW);
@@ -280,16 +282,18 @@ public final class InputLogic {
                 || Character.getType(codePoint) == Character.OTHER_SYMBOL) {
             handleSeparatorEvent(event, inputTransaction);
         } else {
-            handleNonSeparatorEvent(event);
+            handleNonSeparatorEvent(event, inputTransaction);
         }
     }
 
     /**
      * Handle a non-separator.
      * @param event The event to handle.
+     * @param inputTransaction The transaction in progress.
      */
-    private void handleNonSeparatorEvent(final Event event) {
-        sendKeyCodePoint(event.mCodePoint);
+    private void handleNonSeparatorEvent(final Event event,
+            final InputTransaction inputTransaction) {
+        sendKeyCodePoint(event.mCodePoint, inputTransaction.mSettingsValues.mHomoglyphStyle);
     }
 
     /**
@@ -298,7 +302,7 @@ public final class InputLogic {
      * @param inputTransaction The transaction in progress.
      */
     private void handleSeparatorEvent(final Event event, final InputTransaction inputTransaction) {
-        sendKeyCodePoint(event.mCodePoint);
+        sendKeyCodePoint(event.mCodePoint, inputTransaction.mSettingsValues.mHomoglyphStyle);
 
         inputTransaction.requireShiftUpdate(InputTransaction.SHIFT_UPDATE_NOW);
     }
@@ -515,16 +519,21 @@ public final class InputLogic {
      * compatibility is a concern for example) where we want to use deprecated methods.
      *
      * @param codePoint the code point to send.
+     * @param homoglyphStyle the script to replace the code point with, or
+     * {@link HomoglyphMapper#STYLE_OFF} to send it unchanged.
      */
     // TODO: replace these two parameters with an InputTransaction
-    private void sendKeyCodePoint(final int codePoint) {
+    private void sendKeyCodePoint(final int codePoint, final String homoglyphStyle) {
         // TODO: Remove this special handling of digit letters.
         // For backward compatibility. See {@link InputMethodService#sendKeyChar(char)}.
-        if (codePoint >= '0' && codePoint <= '9') {
+        // Digits are only sent as key events when they are not being substituted, since a key
+        // event carries the digit itself and would bypass the substitution.
+        if (codePoint >= '0' && codePoint <= '9' && !HomoglyphMapper.isEnabled(homoglyphStyle)) {
             sendDownUpKeyEvent(codePoint - '0' + KeyEvent.KEYCODE_0);
             return;
         }
 
-        mConnection.commitText(StringUtils.newSingleCodePointString(codePoint), 1);
+        mConnection.commitText(StringUtils.newSingleCodePointString(
+                HomoglyphMapper.map(codePoint, homoglyphStyle)), 1);
     }
 }
