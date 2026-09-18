@@ -21,8 +21,16 @@ jobs:
           distribution: temurin
           java-version: '21'
 
+      # packages is emptied because the action's default list includes the
+      # obsolete 'tools' package, which no longer exists in the SDK repository
+      # and fails the install. The packages this build needs are installed below.
       - name: Set up the Android SDK
         uses: android-actions/setup-android@v3
+        with:
+          packages: ''
+
+      - name: Install the SDK packages
+        run: sdkmanager 'platform-tools' 'platforms;android-37.0' 'build-tools;36.0.0'
 
       # The Gradle wrapper JAR is not tracked in this repository, so the version
       # from gradle/wrapper/gradle-wrapper.properties is installed explicitly
