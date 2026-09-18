@@ -45,6 +45,11 @@ public final class HomoglyphMapper {
     public static final String STYLE_MATH_MONO = "math_mono";
     /** Mixed script, picking the closest shape available in any script. */
     public static final String STYLE_MIXED = "mixed";
+    /**
+     * Only substitutes where the replacement is visually identical to the Latin original, leaving
+     * every other letter as Latin. See {@link #STRICT_PAIRS} for the reasoning.
+     */
+    public static final String STYLE_STRICT = "strict";
 
     public static final String STYLE_DEFAULT = STYLE_GREEK;
 
@@ -119,10 +124,47 @@ public final class HomoglyphMapper {
             // N    O    P    Q    R    S    T    U    V    W    X    Y    Z
             + "ᏁᎣᏢᎩᏒᏚᎢᏏᏔᎳᎸᎤᏃ";
 
+    /**
+     * Strict substitutions, as Latin/substitute pairs.
+     *
+     * Unlike every other style, this one deliberately substitutes only 27 of the 52 letters. A
+     * letter is included only where Roboto (and the Noto family) draw the substitute with exactly
+     * the same shape as the Latin original, so a reader cannot tell the two apart. Every remaining
+     * letter is intentionally left as Latin, because the only available candidates merely resemble
+     * the original rather than matching it: Cyrillic ka and em are noticeably narrower than Latin
+     * "k" and "m", the palochka is a full-height bar rather than an "l", and letters such as "b",
+     * "f", "q", "w" and "z" have no twin in any script with dependable font coverage.
+     *
+     * The mixed-script, partially-substituted output is the entire point of this style. Do NOT
+     * "complete" this table with approximate lookalikes: a single visibly wrong glyph gives away
+     * the whole string, which is exactly what the other styles do and what this style exists to
+     * avoid. Digits are likewise left alone, as neither Cyrillic nor Greek contains digit shapes.
+     *
+     * Each substitute below was verified against the Roboto and Noto Sans binaries: in Roboto the
+     * Cyrillic and Greek glyphs are composite glyphs that reference the corresponding Latin glyph
+     * at offset (0,0), or carry a byte-identical copy of its outline, with matching advance widths.
+     * They are therefore identical by construction rather than merely similar. Candidates were also
+     * rejected when a face lacked the glyph outright: Komi de (U+0501) for "d" and script g
+     * (U+0261) for "g" are pixel-identical in Roboto but absent from RobotoFlex, where they would
+     * fall back to a different typeface and stand out badly.
+     *
+     * Cyrillic is preferred throughout, since it has the widest coverage of true Latin twins.
+     * Greek is used only for the three uppercase letters where Cyrillic has no identical form:
+     * Cyrillic U (U+0423) has a descender unlike Latin "Y", and Cyrillic I (U+0418) is an inverted
+     * N, so Greek nu, upsilon and zeta are used for N, Y and Z instead.
+     */
+    private static final String STRICT_PAIRS =
+            // Lowercase. b, d, f, g, k, l, m, n, q, r, t, u, v, w, z have no identical twin.
+            "aа" + "cс" + "eе" + "hһ" + "iі" + "jј" + "oо" + "pр" + "sѕ" + "xх" + "yу"
+            // Uppercase. D, F, G, K, L, Q, R, U, V, W have no identical twin.
+            + "AА" + "BВ" + "CС" + "EЕ" + "HН" + "IІ" + "JЈ" + "MМ" + "NΝ" + "OО" + "PР"
+            + "SЅ" + "TТ" + "XХ" + "YΥ" + "ZΖ";
+
     private static final SparseIntArray GREEK_MAP = buildMap(GREEK_LETTERS);
     private static final SparseIntArray CYRILLIC_MAP = buildMap(CYRILLIC_LETTERS);
     private static final SparseIntArray CHEROKEE_MAP = buildMap(CHEROKEE_LETTERS);
     private static final SparseIntArray MIXED_MAP = buildMap(MIXED_LETTERS);
+    private static final SparseIntArray STRICT_MAP = buildPairMap(STRICT_PAIRS);
 
     private HomoglyphMapper() {
         // This class is not publicly instantiable.
@@ -141,6 +183,23 @@ public final class HomoglyphMapper {
         final int length = Math.min(LATIN_LETTERS.length(), substitutes.length());
         for (int i = 0; i < length; ++i) {
             map.put(LATIN_LETTERS.charAt(i), substitutes.charAt(i));
+        }
+        return map;
+    }
+
+    /**
+     * Builds a Latin code point to substitute code point lookup from a flat list of pairs.
+     *
+     * This is used instead of {@link #buildMap(String)} by styles that only substitute some of the
+     * letters, where a table indexed against every Latin letter would be mostly padding.
+     *
+     * @param pairs alternating Latin and substitute code points, both single BMP characters.
+     * @return the populated lookup.
+     */
+    private static SparseIntArray buildPairMap(final String pairs) {
+        final SparseIntArray map = new SparseIntArray(pairs.length() / 2);
+        for (int i = 0; i + 1 < pairs.length(); i += 2) {
+            map.put(pairs.charAt(i), pairs.charAt(i + 1));
         }
         return map;
     }
@@ -206,6 +265,10 @@ public final class HomoglyphMapper {
             return CHEROKEE_MAP.get(codePoint, codePoint);
         case STYLE_MIXED:
             return MIXED_MAP.get(codePoint, codePoint);
+        case STYLE_STRICT:
+            // Letters with no identical twin, and all digits, are absent from the table and so are
+            // returned unchanged. That partial substitution is intended; see STRICT_PAIRS.
+            return STRICT_MAP.get(codePoint, codePoint);
         default:
             return codePoint;
         }

@@ -74,5 +74,6 @@
         <item>math_sans</item>
         <item>math_mono</item>
         <item>mixed</item>
+        <item>strict</item>
     </string-array>
 </resources>

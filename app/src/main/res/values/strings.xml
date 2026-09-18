@@ -132,6 +132,7 @@
         <item>Sans-serif</item>
         <item>Monospace</item>
         <item>Mixed scripts</item>
+        <item>Identical only</item>
     </string-array>
     <string name="setup_message">CleanBoard is not enabled. Click OK to open Languages &amp; Input settings. You will need to select CleanBoard in your current keyboard to use it.</string>
     <string name="user_languages">Enabled keyboard languages</string>
