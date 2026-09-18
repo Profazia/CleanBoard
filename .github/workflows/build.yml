@@ -3,6 +3,7 @@ name: Build APK
 on:
   push:
     branches: ['**']
+    tags: ['v*']
   pull_request:
   workflow_dispatch:
 
@@ -10,6 +11,11 @@ jobs:
   build:
     name: Build debug APK
     runs-on: ubuntu-latest
+
+    # Needed by the release step below to create the release and upload the APK
+    # to it. Every other step in this job only reads the repository.
+    permissions:
+      contents: write
 
     steps:
       - name: Check out the source
@@ -49,3 +55,31 @@ jobs:
           name: cleanboard-debug
           path: app/build/outputs/apk/debug/*.apk
           if-no-files-found: error
+
+      # Only tag pushes publish a release; branch pushes and pull requests stop
+      # at the artifact above. The APK is renamed to carry the tag so that the
+      # downloaded file is identifiable outside of the release page.
+      - name: Attach the APK to the release
+        if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          apk="$(find app/build/outputs/apk/debug -name '*.apk' -print -quit)"
+          if [ -z "$apk" ]; then
+            echo "No APK found to attach." >&2
+            exit 1
+          fi
+          asset="cleanboard-${TAG}-debug.apk"
+          cp "$apk" "$asset"
+
+          # The release is created on the first run for a tag and reused after,
+          # so that a re-run replaces the asset instead of failing outright.
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" "$asset" --clobber
+          else
+            gh release create "$TAG" "$asset" \
+              --title "CleanBoard $TAG" \
+              --notes "Debug APK built from ${GITHUB_SHA}. Signed with the Android debug key, not for distribution."
+          fi
