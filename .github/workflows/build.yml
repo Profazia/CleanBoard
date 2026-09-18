@@ -13,10 +13,10 @@ jobs:
 
     steps:
       - name: Check out the source
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Set up JDK 21
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v6
         with:
           distribution: temurin
           java-version: '21'
@@ -25,7 +25,7 @@ jobs:
       # obsolete 'tools' package, which no longer exists in the SDK repository
       # and fails the install. The packages this build needs are installed below.
       - name: Set up the Android SDK
-        uses: android-actions/setup-android@v3
+        uses: android-actions/setup-android@v4
         with:
           packages: ''
 
@@ -36,7 +36,7 @@ jobs:
       # from gradle/wrapper/gradle-wrapper.properties is installed explicitly
       # instead of going through ./gradlew.
       - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@v4
+        uses: gradle/actions/setup-gradle@v6
         with:
           gradle-version: '9.6.0'
 
@@ -44,7 +44,7 @@ jobs:
         run: gradle assembleDebug --stacktrace
 
       - name: Upload the APK
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: cleanboard-debug
           path: app/build/outputs/apk/debug/*.apk
